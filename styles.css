@@ -1,0 +1,12 @@
+body {
+    margin: 0;
+    box-sizing: border-box;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    background: rgb(46,136,154);
+    background: linear-gradient(90deg, rgba(46,136,154,1) 35%, rgba(221,160,221,1) 65%);
+
+  }
+  .orden{
+    margin: auto 600px;
+  }
