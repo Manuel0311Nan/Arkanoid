@@ -1,3 +1,5 @@
+import { Scoreboard } from "./components/Scoreboard.js";
+
 export class Game extends Phaser.Scene{
     //Phaser.Scene, punto de partida que proporciona Phaser para crear una escena del juego
     //Creamos una serie de métodos que son reclamados en el momento que nosotros queramos
@@ -8,7 +10,7 @@ export class Game extends Phaser.Scene{
     }
     //--Inicialización de la escena, con una key en este caso game unico para cada escena-----//
     init() {
-        this.score = 0;
+        this.scoreboard = new Scoreboard(this);
 }
     //--preload --> precarga de todos los assets que necesitamos para inicializar el juego (imagenes, sonidos, etc)
     preload() {
@@ -26,17 +28,14 @@ export class Game extends Phaser.Scene{
         
         //? Con this.add.image elegimos las coordenadas y el primer parametro creado en preload, coloca el centro de la imagen en las coordenadas 300-200
         this.add.image(300, 200, 'background');
-        this.gameoverImage = this.add.image(300, 100, 'gameover');
+        this.gameoverImage = this.add.image(400, 100, 'gameover');
         this.gameoverImage.visible = false
 
-        this.scoreText = this.add.text(16, 16, 'Puntos: 0', {
-            fontSize: '20px',
-            fill: '#fff',
-            fontFamily: 'verdana, arial, sans-serif'
-        })
+        this.scoreboard.create();
+
         //? Pyhsics --> permite colocar elementos a los que le va afectar el sistema de fisicas, en primer lugar cae porque hemos establecido la gravedad
         //Añadimos al final de la declaración de la imagen de plataforma el método setImmovable que no dejára que se mueva la plataforma cuando la bola rebote
-        this.platform = this.physics.add.image(300, 350, 'platform').setImmovable();
+        this.platform = this.physics.add.image(400, 350, 'platform').setImmovable();
 
         //con el método allowgravity permitimos o no la actuación de la gravedad
         this.platform.body.allowGravity = false;
@@ -75,9 +74,7 @@ export class Game extends Phaser.Scene{
 
     }
     platformImpact(){
-        this.score++;
-        this.scoreText.setText('Puntos: ' + this.score)
-        console.log(this.score)
+        this.scoreboard.incrementPoints(1)
     }
     //--update --> método que se ejecuta en bucle de manera infinita siempre que la escena esté activa
     update() {

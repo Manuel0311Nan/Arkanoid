@@ -2,8 +2,8 @@ import {Game} from './game.js'
 
 var config = {
     type: Phaser.AUTO,
-    width: 600,
-    height: 400,
+    width: 800,
+    height: 450,
     //Sistema de físicas desarrolladas dentro del juego. Por defecto esta en Arcade, 
     //Gravedad en el eje de la Y, cuanto mayor es el valor más rápido caen los objetos
     physics: {
