@@ -43,20 +43,22 @@ export class Game extends Phaser.Scene{
         //Establecemos que la plataforma colisione con todos los lados de la escena (izquierda y derecha en este caso por que solo se mueve en el eje x)
         this.platform.setCollideWorldBounds(true);
 
-        this.ball = this.physics.add.image(300, 30, 'ball');
-
+        this.ball = this.physics.add.image(385, 330, 'ball');
+        this.ball.setData('glue', true)
+        
         //Establecemos que la bola colisione con todos los lados de la escena
         this.ball.setCollideWorldBounds(true);
-        //!--------------Modificación de los valores de la velocidad de la bola-------------------\/ ///
-        //Calcula la velocidad (velocityBall) multiplicando 100 por un valor aleatorio entre 1.3 y 2.
-        let velocityBall = 100 * Phaser.Math.Between(1.3, 2)
-        if (Phaser.Math.Between(0, 10) > 5) {
-            velocityBall = 0 - velocityBall
-        }
-        this.ball.setVelocity(velocityBall, 10);
-        //!--------------Modificación de los valores de la velocidad de la bola------------------- /\ ///
+ //!--------------Modificación de los valores de la velocidad de la bola-------------------\/ ///
+        //? Calcula la velocidad (velocityBall) multiplicando 100 por un valor aleatorio entre 1.3 y 2.
+        //? Líneas comentadas porque hacían que la bola se moviese desde el principio y queremos que empiece desde la plataforma
+        // let velocityBall = 100 * Phaser.Math.Between(1.3, 2)
+        // if (Phaser.Math.Between(0, 10) > 5) {
+        //     velocityBall = 0 - velocityBall
+        // }
+        // this.ball.setVelocity(velocityBall, 10);
+//!--------------Modificación de los valores de la velocidad de la bola------------------- /\ ///
 
-                //!--------------Método que explica las colisiones entre la bola y la plataforma y  como cuenta los puntos-------------------\/ ///
+//!--------------Método que explica las colisiones entre la bola y la plataforma y  como cuenta los puntos-------------------\/ ///
         //Código relacionado con las colisiones entre elementos. en este caso la plataforma y la bola. Método collider(1º, 2º,3º,4º, 5º)
         //Parámetros: 1º: objeto 2º: objeto 3º: comportamiento a ejecutar , 4º: función callback que decide cuando hay colision y cuando no,5º: contexto ; 
         //Si sólo declaramos los objetos que van a colisionar, uno de los objetos desplaza al otro
@@ -73,26 +75,51 @@ export class Game extends Phaser.Scene{
 //!----------------uso de los cursores para jugar--------------------------------------- /\ //
 
     }
-    platformImpact(){
+    // La variable relativeImpact  = punto en eje x de la bola y punto del eje x de la plataforma, siendo numeros más pequeños ( negativos)...
+    //... cuanto más a la izquierda de la plataforma choca la bola 
+    //Se le aplica a relativeImpact un aumento en función de en que lado choque, para que sea un movimiento más aleatorio,...
+    //... sobre todo cuando choca en el centro de la plataforma
+    platformImpact(ball, platform){
         this.scoreboard.incrementPoints(1)
+        let relativeImpact = ball.x - platform.x
+        console.log(relativeImpact)
+        if (relativeImpact < 0.1 && relativeImpact > -0.1) {
+            ball.setVelocityX(Phaser.Math.Between(-10, 10))
+        } else {
+            ball.setVelocityX(10 * relativeImpact)
+        }
     }
     //--update --> método que se ejecuta en bucle de manera infinita siempre que la escena esté activa
     update() {
         //isDown --> método que sabe si la tecla está siendo pulsada, si la tecla left está siendo pulsada se moverá hacia la izquierda a -500(izquierda)...
         //... si la tecla right está siendo pulsada se moverá hacia la derecha a 500(derecha), si no se pulsa ninguna tecla la plataforma se quedará parada
         if (this.cursors.left.isDown) {
-            this.platform.setVelocityX(-500)
+            this.platform.setVelocityX(-500);
+            if (this.ball.getData('glue')) {
+                this.ball.setVelocityX(-500)
+            }
+            
         }
         else if  (this.cursors.right.isDown) {
             this.platform.setVelocityX(500)
+            if (this.ball.getData('glue')) {
+                this.ball.setVelocityX(500)
+            }
         }
         else  {
             this.platform.setVelocityX(0)
+            if (this.ball.getData('glue')) {
+                this.ball.setVelocityX(0)
+            }
         }
         if (this.ball.y > 450) {
             console.log('Game Over');
             this.gameoverImage.visible = true;
             this.scene.pause();
+        }
+        if (this.cursors.up.isDown) {
+            this.ball.setVelocity(-75, -300);
+            this.ball.setData('glue', false)
         }
     }
 
