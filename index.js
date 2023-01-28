@@ -1,4 +1,8 @@
-import {Game} from './game.js'
+//es-dev-server -o -w
+
+import { Game } from './scenes/game.js'
+import { GameOver } from './scenes/game-over.js';
+import { Congratulations } from './scenes/congratulations.js';
 
 var config = {
     type: Phaser.AUTO,
@@ -14,7 +18,7 @@ var config = {
         }
     },
     //Distintas partes del juego muy diferentes entre ellas
-    scene: [Game]
+    scene: [Game, GameOver, Congratulations]
 };
 //Declaramos la variable del juego con la configuración anteriormente creada
 var game = new Phaser.Game(config);

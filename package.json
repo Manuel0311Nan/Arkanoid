@@ -4,12 +4,15 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": " index.js",
+    "start": " web-dev-server --node-resolve --watch --open",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "manuel",
   "license": "ISC",
   "dependencies": {
     "phaser": "^3.55.2"
+  },
+  "devDependencies": {
+    "@web/dev-server": "^0.1.35"
   }
 }

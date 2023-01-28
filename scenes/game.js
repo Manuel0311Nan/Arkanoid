@@ -1,4 +1,4 @@
-import { Scoreboard } from "./components/Scoreboard.js";
+import { Scoreboard } from "../components/Scoreboard.js";
 
 export class Game extends Phaser.Scene{
     //Phaser.Scene, punto de partida que proporciona Phaser para crear una escena del juego
@@ -16,9 +16,12 @@ export class Game extends Phaser.Scene{
     preload() {
         //!El primer parametro ('background') para que phaser sepa cuando llamemos a esos parametros a que archivo hacemos referencia
         this.load.image('background', 'images/background.png')
-        this.load.image('gameover', 'images/gameover.png')
         this.load.image('platform', 'images/platform.png')
         this.load.image('ball', 'images/ball.png')
+        this.load.image('bluebrick', 'images/brickBlue.png')
+        this.load.image('blackbrick', 'images/brickBlack.png')
+        this.load.image('greenbrick', 'images/brickGreen.png')
+        this.load.image('orangebrick', 'images/brickOrange.png')
     }
     //--create --> crea la escena, encargado de ir colocando todos los elementos que conforman la escena(personajes, imagenes, etc)
     create() {
@@ -26,13 +29,34 @@ export class Game extends Phaser.Scene{
         this.physics.world.setBoundsCollision(true, true, true, false)
          //!-----------this.physics.world.setBoundsCollision(true,true,true,false) activa el rebote en los lados que le digamos (izq,der,arriba,abajo)
         
+
         //? Con this.add.image elegimos las coordenadas y el primer parametro creado en preload, coloca el centro de la imagen en las coordenadas 300-200
         this.add.image(300, 200, 'background');
-        this.gameoverImage = this.add.image(400, 100, 'gameover');
-        this.gameoverImage.visible = false
+        // this.gameoverImage = this.add.image(400, 100, 'gameover');
+        // this.gameoverImage.visible = false
+        // this.congratsImage = this.add.image(400, 100, 'congratulations');
+        // this.congratsImage.visible = false
 
         this.scoreboard.create();
-
+   //!-----------Permite colocar los elementos de una forma única con un objeto de configuración, se colocan 4 bloques de una vez
+        //Como se van a colocar los elementos, en este caso se ha definido una cuadrícula
+        //key: los elementos que se van a colocar en este grupo
+        //frameQuantity: indicamos la cantidad de cada key que queremos que aparezcan
+        //gridAlign: establece como va a ser la rejilla donde van a aparecer los elementos
+        this.bricks = this.physics.add.staticGroup({
+            key: ['bluebrick', 'blackbrick', 'greenbrick', 'orangebrick'],
+            frameQuantity: 5,
+            gridAlign: {
+                width: 10,
+                height: 4,
+                cellWidth: 67,
+                cellHeight: 34,
+                x: 112,
+                y:100
+            }
+})
+ //!-----------Permite colocar los elementos de una forma única con un objeto de configuración, se colocan 4 bloques de una vez
+        
         //? Pyhsics --> permite colocar elementos a los que le va afectar el sistema de fisicas, en primer lugar cae porque hemos establecido la gravedad
         //Añadimos al final de la declaración de la imagen de plataforma el método setImmovable que no dejára que se mueva la plataforma cuando la bola rebote
         this.platform = this.physics.add.image(400, 350, 'platform').setImmovable();
@@ -62,8 +86,9 @@ export class Game extends Phaser.Scene{
         //Código relacionado con las colisiones entre elementos. en este caso la plataforma y la bola. Método collider(1º, 2º,3º,4º, 5º)
         //Parámetros: 1º: objeto 2º: objeto 3º: comportamiento a ejecutar , 4º: función callback que decide cuando hay colision y cuando no,5º: contexto ; 
         //Si sólo declaramos los objetos que van a colisionar, uno de los objetos desplaza al otro
-        //El 5º parámetro se puede cambiar por el método bind de js en el 3er parámetro this.ejecutar.bind(this)
+        //El 5º parámetro se puede cambiar por el método bind de js en el 3er parámetro this.platformImpact.bind(this)
         this.physics.add.collider(this.ball, this.platform, this.platformImpact, null, this)
+        this.physics.add.collider(this.ball, this.bricks, this.brickImpact, null, this)
 //!--------------Método que explica las colisiones entre la bola y la plataforma y  como cuenta los puntos-------------------/\ ///
 
         //Método setBounce (potencia): cuanto más alta sea la potencia más lejos llegará al rebotar
@@ -75,8 +100,18 @@ export class Game extends Phaser.Scene{
 //!----------------uso de los cursores para jugar--------------------------------------- /\ //
 
     }
+        //El método disableBody viene de Phaser y por defecto sus valores vienen como 'false'
+    //Método countActive cuenta  cuantos elementos hay actualmente, en este caso al contar esos elementos como 0, aparece la imagen de congrats y pausa la escena
+        brickImpact(ball, brick) {
+            brick.disableBody(true,true)
+            this.scoreboard.incrementPoints(10)
+            if (this.bricks.countActive() === 0) {
+                this.showCongrats();
+            }
+    }
+    
     // La variable relativeImpact  = punto en eje x de la bola y punto del eje x de la plataforma, siendo numeros más pequeños ( negativos)...
-    //... cuanto más a la izquierda de la plataforma choca la bola 
+    //... cuanto más a la izquierda de la plataforma choca la bola
     //Se le aplica a relativeImpact un aumento en función de en que lado choque, para que sea un movimiento más aleatorio,...
     //... sobre todo cuando choca en el centro de la plataforma
     platformImpact(ball, platform){
@@ -88,7 +123,8 @@ export class Game extends Phaser.Scene{
         } else {
             ball.setVelocityX(10 * relativeImpact)
         }
-    }
+    } 
+
     //--update --> método que se ejecuta en bucle de manera infinita siempre que la escena esté activa
     update() {
         //isDown --> método que sabe si la tecla está siendo pulsada, si la tecla left está siendo pulsada se moverá hacia la izquierda a -500(izquierda)...
@@ -112,15 +148,27 @@ export class Game extends Phaser.Scene{
                 this.ball.setVelocityX(0)
             }
         }
+        //
         if (this.ball.y > 450) {
             console.log('Game Over');
-            this.gameoverImage.visible = true;
-            this.scene.pause();
+            this.showGameOver();
+            // this.gameoverImage.visible = true;
+            // this.scene.pause();
+            // this.bricks.setVisible(false);
+            
         }
         if (this.cursors.up.isDown) {
             this.ball.setVelocity(-75, -300);
             this.ball.setData('glue', false)
         }
+
+    }
+
+    showGameOver() {
+        this.scene.start('gameover')
+    }
+    showCongrats() {
+        this.scene.start('congratulations')
     }
 
     //-- Preload carga elementos y el create escoge aquellos elementos que necesite para crear la escena que toque, mediante:
